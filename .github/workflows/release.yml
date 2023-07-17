@@ -8,7 +8,7 @@ on:
 jobs:
   build_and_release:
     name: Build and Release
-    runs-on: ubuntu-latest  # You can choose ubuntu-latest or another platform, as this job will only prepare the environment
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -34,3 +34,20 @@ jobs:
         run: |
           mkdir -p dist
           mv dist/mypass-service dist/mypass-service-$os
+
+      # Add a check step to verify if the executables exist
+      - name: Verify Executables
+        run: ls dist
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            dist/*
+          tag_name: ${{ steps.tag_name.outputs.tag_name }}
+          title: Release ${{ steps.tag_name.outputs.tag_name }}
+          draft: false
+          prerelease: ${{ steps.is_prerelease.outputs.is_prerelease == 'true' }}
