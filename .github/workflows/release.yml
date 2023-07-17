@@ -1,0 +1,36 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger the workflow on tags starting with 'v'
+
+jobs:
+  build_and_release:
+    name: Build and Release
+    runs-on: ubuntu-latest  # You can choose ubuntu-latest or another platform, as this job will only prepare the environment
+
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install pyinstaller
+
+      - name: Build Executable
+        run: |
+          pyinstaller --name mypass-service --onefile service.py
+
+      - name: Move Executable to dist/
+        run: |
+          mkdir -p dist
+          mv dist/mypass-service dist/mypass-service-$os
